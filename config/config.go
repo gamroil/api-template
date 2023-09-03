@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const overridePrefix = "OVERRIDE"
+
 // Configuration is the struct representation of the config yaml. Instantiation should occur through the Configure
 // function as it creates internal resources.
 type Configuration struct {
@@ -17,7 +19,7 @@ type Configuration struct {
 // because it creates internal resources.
 func Configure(filepath string) *Configuration {
 	viper.SetConfigFile(filepath)
-	viper.SetEnvPrefix("OVERRIDE")
+	viper.SetEnvPrefix(overridePrefix)
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalln("reading config: ", err)
