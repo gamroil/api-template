@@ -1,20 +1,20 @@
 package handlers
 
 import (
-	"api-template/api/observability"
+	"api-template/api/metrics"
+	"encoding/json"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 type fooResponse struct {
 	Foo string `json:"foo"`
 }
 
-func HandleFoo(metrics *observability.Client) func(c *gin.Context) {
-	return func(c *gin.Context) {
+func HandleFoo(metrics *metrics.Client) func(w http.ResponseWriter, _ *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		metrics.IncrementFooCount()
 		res := fooResponse{Foo: "Bar"}
-		c.JSON(http.StatusOK, res)
+		b, _ := json.Marshal(res)
+		w.Write(b)
 	}
 }

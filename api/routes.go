@@ -2,9 +2,7 @@ package api
 
 import (
 	"api-template/api/handlers"
-
-	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/go-chi/chi/v5"
 )
 
 const (
@@ -13,14 +11,8 @@ const (
 	routeMetrics = "/metrics"
 )
 
-func (a *App) createRoutes(router *gin.Engine) {
-	prometheusHandler := func(c *gin.Context) {
-		h := promhttp.HandlerFor(a.metrics.Registry, promhttp.HandlerOpts{Registry: a.metrics.Registry})
-		h.ServeHTTP(c.Writer, c.Request)
-	}
-
-	router.GET(routeMetrics, prometheusHandler)
-
-	router.GET(routeHello, handlers.HandleHello())
-	router.GET(routeFoo, handlers.HandleFoo(a.metrics))
+func (a *App) createRoutes(router *chi.Mux) {
+	router.Get(routeMetrics, handlers.HandleMetrics(a.metrics.Registry))
+	router.Get(routeHello, handlers.HandleHello())
+	router.Get(routeFoo, handlers.HandleFoo(a.metrics))
 }

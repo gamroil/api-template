@@ -1,18 +1,18 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 type helloResponse struct {
 	Hello string `json:"hello"`
 }
 
-func HandleHello() func(c *gin.Context) {
-	return func(c *gin.Context) {
+func HandleHello() func(w http.ResponseWriter, _ *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		res := helloResponse{Hello: "World"}
-		c.JSON(http.StatusOK, res)
+		b, _ := json.Marshal(res)
+		w.Write(b)
 	}
 }

@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"log/slog"
+	"os"
 	"runtime/debug"
-
-	"go.uber.org/zap"
 
 	"github.com/spf13/cobra"
 )
@@ -16,11 +16,7 @@ func newVersionCmd() *cobra.Command {
 			if info, ok := debug.ReadBuildInfo(); ok {
 				for _, setting := range info.Settings {
 					if setting.Key == "vcs.revision" {
-						logger := zap.Must(zap.NewProduction())
-						defer func() {
-							_ = logger.Sync()
-						}()
-
+						logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 						logger.Info(setting.Value)
 					}
 				}

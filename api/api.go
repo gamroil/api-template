@@ -1,20 +1,24 @@
 package api
 
 import (
-	"api-template/api/observability"
 	"fmt"
+	"log/slog"
+	"net/http"
 	"os"
 
+	"api-template/api/metrics"
 	"api-template/config"
 
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	"github.com/go-chi/chi/v5"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
+const appName = "api-template"
+
 type App struct {
-	logger  *zap.Logger
+	logger  *slog.Logger
 	config  *config.Configuration
-	metrics *observability.Client
+	metrics *metrics.Client
 }
 
 func New(configPath string) *App {
@@ -22,30 +26,27 @@ func New(configPath string) *App {
 		configPath = "config.yaml"
 	}
 
-	logger := zap.Must(zap.NewProduction())
-	defer func() {
-		_ = logger.Sync()
-	}()
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	return &App{
 		logger:  logger,
 		config:  config.Configure(configPath),
-		metrics: observability.New(logger),
+		metrics: metrics.New(logger),
 	}
 }
 
 // Start runs the API. It is triggered by the serve command.
 func (a *App) Start() {
-	a.run()
-}
-
-func (a *App) run() {
-	router := gin.Default()
-	a.createRoutes(router)
+	r := chi.NewRouter()
+	r.Use(chimiddleware.Logger)
+	r.Use(a.NewMetricsMiddleware)
+	a.createRoutes(r)
 
 	port := fmt.Sprintf(":%d", a.config.Port)
-	if err := router.Run(port); err != nil {
-		a.logger.Error("starting the API: ", zap.Error(err))
+	startupLog := fmt.Sprintf("starting API on port :%d", a.config.Port)
+	a.logger.Info(startupLog)
+	if err := http.ListenAndServe(port, r); err != nil {
+		a.logger.Error("starting the API: ", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 }
