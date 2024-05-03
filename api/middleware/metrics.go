@@ -8,11 +8,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-var defaultBuckets = []float64{300, 1200, 5000}
-
 const (
-	requestName = "chi_requests_total"
-	latencyName = "chi_request_duration_milliseconds"
+	requestName             = "chi_requests_total"
+	latencyName             = "chi_request_duration_milliseconds"
+	nanosecondToMillisecond = 1000000
 )
 
 // Middleware is a handler that exposes prometheus metrics for the number of requests,
@@ -22,7 +21,8 @@ type Middleware struct {
 	latency *prometheus.HistogramVec
 }
 
-func NewPrometheusMiddleware(reg *prometheus.Registry, name string, buckets ...float64) func(next http.Handler) http.Handler {
+func NewPrometheusMiddleware(reg *prometheus.Registry, name string,
+	buckets ...float64) func(next http.Handler) http.Handler {
 	var m Middleware
 	m.reqs = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -33,6 +33,8 @@ func NewPrometheusMiddleware(reg *prometheus.Registry, name string, buckets ...f
 		[]string{"code", "method", "path"},
 	)
 	reg.MustRegister(m.reqs)
+
+	defaultBuckets := []float64{300, 1200, 5000}
 
 	if len(buckets) == 0 {
 		buckets = defaultBuckets
@@ -56,7 +58,7 @@ func (c Middleware) handler(next http.Handler) http.Handler {
 		next.ServeHTTP(ww, r)
 		c.reqs.WithLabelValues(http.StatusText(ww.Status()), r.Method, r.URL.Path).Inc()
 		c.latency.WithLabelValues(http.StatusText(ww.Status()), r.Method, r.URL.Path).
-			Observe(float64(time.Since(start).Nanoseconds()) / 1000000)
+			Observe(float64(time.Since(start).Nanoseconds()) / nanosecondToMillisecond)
 	}
 	return http.HandlerFunc(fn)
 }

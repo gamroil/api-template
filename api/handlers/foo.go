@@ -15,6 +15,6 @@ func HandleFoo(metrics *metrics.Client) func(w http.ResponseWriter, _ *http.Requ
 		metrics.IncrementFooCount()
 		res := fooResponse{Foo: "Bar"}
 		b, _ := json.Marshal(res)
-		w.Write(b)
+		_, _ = w.Write(b)
 	}
 }

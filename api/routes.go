@@ -2,6 +2,7 @@ package api
 
 import (
 	"api-template/api/handlers"
+
 	"github.com/go-chi/chi/v5"
 )
 

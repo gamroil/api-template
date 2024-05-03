@@ -6,11 +6,12 @@ COPY . /app
 RUN apk add make \
     && make build
 
-ENTRYPOINT ["/app/api", "version"]
+ENTRYPOINT ["/app/api-template", "version"]
 
 FROM alpine
 
 WORKDIR /app
-COPY --from=builder /app/api /app
+COPY --from=builder /app/api-template /app
+COPY --from=builder /app/config.yaml /app
 
-ENTRYPOINT ["/app/api", "serve"]
+ENTRYPOINT ["/app/api-template", "serve"]

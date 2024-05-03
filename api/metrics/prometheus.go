@@ -1,7 +1,8 @@
 package metrics
 
 import (
-	prometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
+
 	"log/slog"
 )
 

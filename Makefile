@@ -8,7 +8,7 @@ build-image:
 	@docker build -t $(IMAGE_NAME) .
 
 run-image:
-	@docker run $(IMAGE_NAME)
+	@docker run -p 8080:8080 $(IMAGE_NAME)
 
 lint:
 	@golangci-lint run --config golangci.yaml
